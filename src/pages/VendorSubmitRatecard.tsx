@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Upload, Trash2, Edit } from "lucide-react";
-import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
 interface Resource {
@@ -27,15 +26,17 @@ interface Resource {
   businessJustification: string;
 }
 
-export default function SubmitRateCard() {
-  const location = useLocation();
-  const requestData = location.state || {};
-  
+interface Props {
+  requestData: { requestId?: string; project?: string };
+  onClose: () => void;
+}
+
+export default function VendorSubmitRatecard({ requestData, onClose }: Props) {
   const [resources, setResources] = useState<Resource[]>([]);
-  const [showAddForm, setShowAddForm] = useState(true); // Form shown by default
+  const [showAddForm, setShowAddForm] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState<Partial<Resource>>({
     vendor: "TechVendor Inc.",
     project: requestData.project || "",
@@ -65,7 +66,7 @@ export default function SubmitRateCard() {
     };
 
     if (editingId) {
-      setResources(resources.map(r => r.id === editingId ? newResource : r));
+      setResources(resources.map((r) => (r.id === editingId ? newResource : r)));
       setEditingId(null);
       toast.success("Resource updated successfully");
     } else {
@@ -84,7 +85,7 @@ export default function SubmitRateCard() {
   };
 
   const handleDelete = (id: string) => {
-    setResources(resources.filter(r => r.id !== id));
+    setResources(resources.filter((r) => r.id !== id));
     toast.success("Resource removed");
   };
 
@@ -99,29 +100,17 @@ export default function SubmitRateCard() {
   const confirmSubmission = () => {
     setShowConfirmModal(false);
     toast.success("Rate card submitted successfully! Approval flow: FTE Lead → Business Desk");
-    // Reset form
     setResources([]);
+    onClose();
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Submit Rate Card</h1>
-          <p className="text-muted-foreground mt-1">
-            {requestData.requestId ? `Responding to request: ${requestData.requestId}` : "Add resources and submit rate card"}
-          </p>
-        </div>
-        <Button 
-          onClick={() => {
-            setShowAddForm(true);
-            setFormData({ vendor: "TechVendor Inc.", project: requestData.project || "", location: "remote" });
-            setEditingId(null);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Resource
-        </Button>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Submit Rate Card</h1>
+        <p className="text-muted-foreground mt-1">
+          {requestData.requestId ? `Responding to request: ${requestData.requestId}` : "Add resources and submit rate card"}
+        </p>
       </div>
 
       {/* Add Resource Form */}
@@ -153,17 +142,12 @@ export default function SubmitRateCard() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project">Project *</Label>
-                <Select value={formData.project} onValueChange={(val) => setFormData({ ...formData, project: val })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Alpha">Alpha</SelectItem>
-                    <SelectItem value="Beta">Beta</SelectItem>
-                    <SelectItem value="Gamma">Gamma</SelectItem>
-                    <SelectItem value="Delta">Delta</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="project"
+                  value={formData.project}
+                  disabled
+                  className="bg-muted"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role *</Label>
@@ -171,11 +155,11 @@ export default function SubmitRateCard() {
                   id="role"
                   value={formData.role || ""}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  placeholder="e.g., Senior Developer"
+                  placeholder="Enter role (e.g., Senior Developer)"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date *</Label>
+                <Label htmlFor="startDate">Start Date</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -184,7 +168,7 @@ export default function SubmitRateCard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">End Date *</Label>
+                <Label htmlFor="endDate">End Date</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -193,26 +177,29 @@ export default function SubmitRateCard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="location">Location *</Label>
-                <Select value={formData.location} onValueChange={(val) => setFormData({ ...formData, location: val })}>
-                  <SelectTrigger>
-                    <SelectValue />
+                <Label htmlFor="location">Location</Label>
+                <Select
+                  value={formData.location}
+                  onValueChange={(value) => setFormData({ ...formData, location: value })}
+                >
+                  <SelectTrigger id="location">
+                    <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="onsite">Onsite</SelectItem>
-                    <SelectItem value="offsite">Offsite</SelectItem>
                     <SelectItem value="remote">Remote</SelectItem>
+                    <SelectItem value="on-site">On-site</SelectItem>
+                    <SelectItem value="hybrid">Hybrid</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="proposedRate">Proposed Rate ($/hr) *</Label>
+                <Label htmlFor="proposedRate">Proposed Rate (USD/hr) *</Label>
                 <Input
                   id="proposedRate"
                   type="number"
                   value={formData.proposedRate || ""}
                   onChange={(e) => setFormData({ ...formData, proposedRate: e.target.value })}
-                  placeholder="85"
+                  placeholder="Enter hourly rate"
                 />
               </div>
               <div className="space-y-2">
@@ -221,34 +208,33 @@ export default function SubmitRateCard() {
                   id="poNumber"
                   value={formData.poNumber || ""}
                   onChange={(e) => setFormData({ ...formData, poNumber: e.target.value })}
-                  placeholder="Optional"
+                  placeholder="Enter PO number"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="techStack">Tech Stack *</Label>
+                <Label htmlFor="techStack">Tech Stack</Label>
                 <Input
                   id="techStack"
                   value={formData.techStack || ""}
                   onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
-                  placeholder="React, TypeScript, Node.js"
+                  placeholder="Enter tech stack (e.g., React, Node.js)"
                 />
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="resume">Resume Upload *</Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  {formData.resume ? formData.resume.name : "Drag and drop resume here, or click to browse"}
-                </p>
-                <Input
-                  id="resume"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  className="hidden"
-                  onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
-                />
+              <div className="space-y-2">
+                <Label>Upload Resume (PDF, DOC, DOCX)</Label>
+                <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors cursor-pointer">
+                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    {formData.resume ? formData.resume.name : "Drag and drop resume here, or click to browse (optional)"}
+                  </p>
+                  <Input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
+                  />
+                </div>
               </div>
             </div>
 
@@ -264,12 +250,13 @@ export default function SubmitRateCard() {
             </div>
 
             <div className="flex gap-3 justify-end">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowAddForm(false);
                   setEditingId(null);
                   setFormData({ vendor: "TechVendor Inc.", project: requestData.project || "", location: "remote" });
+                  onClose();
                 }}
               >
                 Cancel
@@ -290,47 +277,49 @@ export default function SubmitRateCard() {
             <CardDescription>Review and edit resources before submission</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Candidate</TableHead>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>End Date</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Rate</TableHead>
-                    <TableHead>Tech Stack</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+            <Table className="table-fixed w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[150px]">Candidate</TableHead>
+                  <TableHead className="w-[100px]">Project</TableHead>
+                  <TableHead className="w-[100px]">Role</TableHead>
+                  <TableHead className="w-[100px]">Start Date</TableHead>
+                  <TableHead className="w-[100px]">End Date</TableHead>
+                  <TableHead className="w-[100px]">Location</TableHead>
+                  <TableHead className="w-[100px]">Rate</TableHead>
+                  <TableHead className="max-w-[200px]">Tech Stack</TableHead>
+                  <TableHead className="text-right w-[150px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {resources.map((resource) => (
+                  <TableRow key={resource.id}>
+                    <TableCell className="font-medium">{resource.candidateName}</TableCell>
+                    <TableCell>{resource.project}</TableCell>
+                    <TableCell>{resource.role}</TableCell>
+                    <TableCell>{resource.startDate}</TableCell>
+                    <TableCell>{resource.endDate}</TableCell>
+                    <TableCell className="capitalize">{resource.location}</TableCell>
+                    <TableCell>${resource.proposedRate}/hr</TableCell>
+                    <TableCell className="max-w-[200px] min-w-0">
+                      <div className="truncate" title={resource.techStack}>
+                        {resource.techStack}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(resource)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(resource.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {resources.map((resource) => (
-                    <TableRow key={resource.id}>
-                      <TableCell className="font-medium">{resource.candidateName}</TableCell>
-                      <TableCell>{resource.project}</TableCell>
-                      <TableCell>{resource.role}</TableCell>
-                      <TableCell>{resource.startDate}</TableCell>
-                      <TableCell>{resource.endDate}</TableCell>
-                      <TableCell className="capitalize">{resource.location}</TableCell>
-                      <TableCell>${resource.proposedRate}/hr</TableCell>
-                      <TableCell className="max-w-xs truncate">{resource.techStack}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(resource)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(resource.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
 
             <div className="flex gap-3 justify-end mt-6 pt-6 border-t">
               <Button variant="outline" onClick={() => setResources([])}>

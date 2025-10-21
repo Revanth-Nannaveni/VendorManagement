@@ -50,7 +50,7 @@ const businessDeskMenuItems = [
 const vendorMenuItems = [
   { title: "Dashboard", url: "/vendor-dashboard", icon: LayoutDashboard },
   { title: "Request Inbox", url: "/vendor-request-inbox", icon: Inbox },
-  { title: "Submit Rate Card", url: "/vendor-submit-ratecard", icon: FileText },
+  // { title: "Submit Rate Card", url: "/vendor-submit-ratecard", icon: FileText },
   // { title: "Schedule Interview", url: "/vendor-schedule-interview", icon: Calendar },
   { title: "Confirmation", url: "/vendor-confirmation", icon: CheckCircle },
   // { title: "Offboarding", url: "/vendor-offboarding-request", icon: UserX },
