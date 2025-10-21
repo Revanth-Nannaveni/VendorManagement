@@ -264,7 +264,7 @@ export default function Offboarding() {
               </Popover>
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="comments">Comments</Label>
               <Textarea
                 id="comments"
@@ -273,11 +273,11 @@ export default function Offboarding() {
                 onChange={(e) => setComments(e.target.value)}
                 rows={4}
                 aria-label="Comments"
-              />
+              /> */}
               {/* <p className="text-xs text-muted-foreground">
                 Provide details or justifications for the offboarding request (optional).
               </p> */}
-            </div>
+            {/* </div> */}
 
             {/* <div>
               <Label className="flex items-center gap-2">
